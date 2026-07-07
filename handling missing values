@@ -1,0 +1,21 @@
+import pandas as pd
+import numpy as np
+
+# --- 1. Replicating the Dataset with the exact visible columns ---
+columns = [
+    'ID', 'CODE_GENDER', 'FLAG_OWN_CAR', 'FLAG_OWN_REALTY', 
+    'CNT_CHILDREN', 'AMT_INCOME_TOTAL', 'NAME_INCOME_TYPE', 
+    'NAME_EDUCATION_TYPE', 'NAME_FAMILY_STATUS', 'NAME_HOUSING_TYPE', 
+    'DAYS_BIRTH', 'DAYS_EMPLOYED', 'FLAG_MOBIL', 'FLAG_WORK_PHONE', 'FLAG_PHONE'
+]
+
+# Generate a clean mock dataset with no missing values (yielding 0.0 mean)
+mock_data = {col: np.random.choice([1, "Sample", 0.0], size=10) for col in columns}
+app = pd.DataFrame(mock_data)
+
+# --- 2. Code from the Screenshot ---
+# Calculates the proportion of missing values in each column
+missing_value_proportions = app.isnull().mean()
+
+# Formatting to show 6 decimal places exactly like the screenshot output
+print(missing_value_proportions.apply(lambda x: f"{x:.6f}"))
