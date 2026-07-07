@@ -1,0 +1,26 @@
+import pandas as pd
+
+# --- 1. Replicating the Credit Dataset for Testing ---
+# Standard Kaggle credit record statuses: 
+# C: closed month, X: no debt, 0: 1-29 days overdue, 1: 30-59 days overdue, etc.
+mock_data = {
+    'ID': [5001711, 5001712, 5001713, 5001714, 5001715],
+    'STATUS': ['0', 'X', 'C', '1', '5']
+}
+credit_df = pd.DataFrame(mock_data)
+
+
+# --- 2. Code from the Screenshot ---
+
+# ------------ 1. Convert Multi-Class PAYMENT STATUS to Binary ------------
+def to_binary(status):
+    if status in ['0', 'X', 'C']:  # Good payment or no loan record -> Approved (1)
+        return 1
+    else:                          # Overdue, bad debt or any other -> Not Approved (0)
+        return 0
+
+# Apply the mapping function to create a binary label column
+credit_df['STATUS_BIN'] = credit_df['STATUS'].apply(to_binary)
+
+# Print out the value distributions of the new target column
+print(credit_df['STATUS_BIN'].value_counts())
