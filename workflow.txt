@@ -1,0 +1,164 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+# ==========================================
+# EPIC 1: Data Collection & Preparation
+# ==========================================
+print("--- Epic 1: Data Collection ---")
+# Simulating the agricultural/crop dataset as requested by the workflow
+np.random.seed(42)
+data_size = 500
+
+data = {
+    'Nitrogen': np.random.randint(10, 100, size=data_size),
+    'Phosphorus': np.random.randint(10, 100, size=data_size),
+    'Potassium': np.random.randint(10, 100, size=data_size),
+    'Temperature': np.random.uniform(15, 40, size=data_size),
+    'Humidity': np.random.uniform(30, 90, size=data_size),
+    'pH': np.random.uniform(4.5, 8.5, size=data_size),
+    'Rainfall': np.random.uniform(50, 250, size=data_size),
+    'Crop': np.random.choice(['Rice', 'Maize', 'Cotton', 'Wheat'], size=data_size)
+}
+
+df = pd.DataFrame(data)
+# Introducing a few explicit duplicate and missing values for cleaning demonstration
+df = pd.concat([df, df.iloc[[0, 1, 2]]], ignore_index=True) 
+df.loc[[10, 25], 'Temperature'] = np.nan
+
+print(f"Dataset prepared successfully. Shape: {df.shape}\n")
+
+
+# ==========================================
+# EPIC 2: Visualizing and Analysing the Data
+# ==========================================
+print("--- Epic 2: Visualizing and Analysing Data ---")
+# Story 2: Read and explore
+print("First 3 rows of dataset:")
+print(df.head(3), "\n")
+
+# Story 5: Descriptive statistical analysis
+print("Descriptive Statistical Summary:")
+print(df.describe(), "\n")
+
+# Story 3 & 4: Univariate and Multivariate analysis (Plotting)
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+sns.histplot(df['Rainfall'], kde=True, color='blue')
+plt.title('Univariate Analysis: Rainfall Distribution')
+
+plt.subplot(1, 2, 2)
+# Select only numeric features for correlation matrix
+numeric_df = df.drop(columns=['Crop'])
+sns.heatmap(numeric_df.corr(), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Multivariate Analysis: Correlation Heatmap')
+plt.tight_layout()
+plt.show()
+
+
+# ==========================================
+# EPIC 3: Data Pre-Processing
+# ==========================================
+print("--- Epic 3: Data Pre-Processing ---")
+
+# Story 1: Identify and remove duplicate records
+print(f"Duplicates found: {df.duplicated().sum()}")
+df = df.drop_duplicates().reset_index(drop=True)
+
+# Story 2: Detect and handle missing values
+print(f"Missing values before handling:\n{df.isnull().sum()[df.isnull().sum() > 0]}")
+df['Temperature'] = df['Temperature'].fillna(df['Temperature'].mean())
+
+# Story 3: Cleaning and merging verification
+print(f"Missing values after handling: {df.isnull().sum().sum()}")
+
+# Story 4: Feature Engineering (e.g., Total NPK Nutrients Ratio)
+df['Total_Nutrients'] = df['Nitrogen'] + df['Phosphorus'] + df['Potassium']
+
+# Story 5: Convert categorical variables into numerical representations
+le = LabelEncoder()
+df['Crop_Encoded'] = le.fit_transform(df['Crop'])
+print("Categorical target encoded successfully.\n")
+
+
+# ==========================================
+# EPIC 4: Model Building & Comparison
+# ==========================================
+print("--- Epic 4: Model Building ---")
+
+X = df.drop(columns=['Crop', 'Crop_Encoded'])
+y = df['Crop_Encoded']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Story 1: Logistic Regression
+lr_model = LogisticRegression(max_iter=1000)
+lr_model.fit(X_train, y_train)
+lr_pred = lr_model.predict(X_test)
+lr_acc = accuracy_score(y_test, lr_pred)
+
+# Story 2: Random Forest
+rf_model = RandomForestClassifier(random_state=42)
+rf_model.fit(X_train, y_train)
+rf_pred = rf_model.predict(X_test)
+rf_acc = accuracy_score(y_test, rf_pred)
+
+# Story 3: Decision Tree
+dt_model = DecisionTreeClassifier(random_state=42)
+dt_model.fit(X_train, y_train)
+dt_pred = dt_model.predict(X_test)
+dt_acc = accuracy_score(y_test, dt_pred)
+
+# Story 4: Compare performance
+print(f"Logistic Regression Accuracy : {lr_acc:.4f}")
+print(f"Random Forest Classifier Accuracy : {rf_acc:.4f}")
+print(f"Decision Tree Classifier Accuracy : {dt_acc:.4f}\n")
+
+# Elect the best model for "Deployment" simulation
+models = {lr_model: lr_acc, rf_model: rf_acc, dt_model: dt_acc}
+best_model = max(models, key=models.get)
+print(f"Selected Best Model for Deployment: {type(best_model).__name__}\n")
+
+
+# ==========================================
+# EPIC 5: Application Building Simulation
+# ==========================================
+print("--- Epic 5: Application Building & Validation ---")
+
+# Simulating an input coming from a user interface (HTML Form)
+def mock_html_interface_predict(inputs):
+    """
+    Simulates Story 1, 2, & 3: Receiving data from HTML interface,
+    processing it through the application logic, and rendering predictions.
+    """
+    # Structuring data exactly like the training feature pipeline
+    input_df = pd.DataFrame([inputs])
+    input_df['Total_Nutrients'] = input_df['Nitrogen'] + input_df['Phosphorus'] + input_df['Potassium']
+    
+    # Run Prediction
+    pred_encoded = best_model.predict(input_df)
+    predicted_crop = le.inverse_transform(pred_encoded)[0]
+    
+    return predicted_crop
+
+# Sample Input received from Form
+sample_user_input = {
+    'Nitrogen': 45,
+    'Phosphorus': 50,
+    'Potassium': 35,
+    'Temperature': 28.5,
+    'Humidity': 70.2,
+    'pH': 6.5,
+    'Rainfall': 120.0
+}
+
+output_crop = mock_html_interface_predict(sample_user_input)
+print(f"SUCCESS: User Interface input successfully validated and processed.")
+print(f"Recommended Crop Result displayed on interface: ** {output_crop} **")
