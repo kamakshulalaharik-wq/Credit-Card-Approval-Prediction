@@ -1,0 +1,39 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# --- 1. Creating Mock Data to match the screenshot distributions ---
+# This ensures the code runs flawlessly and generates the exact requested output.
+occupation_counts = {
+    'Laborers': 78240, 'Core staff': 43007, 'Sales staff': 41098, 'Managers': 35487,
+    'Drivers': 26090, 'High skill tech staff': 17289, 'Accountants': 15985, 
+    'Medicine staff': 13520, 'Cooking staff': 8076, 'Security staff': 7993, 
+    'Cleaning staff': 5845, 'Private service staff': 3456, 'Low-skill Laborers': 2140,
+    'Secretaries': 2044, 'Waiters/barmen staff': 1665, 'Realty agents': 1041, 
+    'HR staff': 774, 'IT staff': 604
+}
+
+# Expand the counts dictionary into a flat list to populate the DataFrame
+data_list = []
+for occupation, count in occupation_counts.items():
+    data_list.extend([occupation] * count)
+
+# Creating the 'app' DataFrame
+app = pd.DataFrame({'OCCUPATION_TYPE': data_list})
+
+
+# --- 2. Code from the Screenshot ---
+print("Number of people working status :")
+print(app['OCCUPATION_TYPE'].value_counts())
+
+# Set the visualization figure size and style
+sns.set(rc={'figure.figsize':(18, 6)})
+
+# Generate the distribution countplot
+sns.countplot(x='OCCUPATION_TYPE', data=app, palette='Set2')
+
+# Rotate the x-axis labels so they don't overlap and remain highly readable
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
