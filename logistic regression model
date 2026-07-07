@@ -1,0 +1,37 @@
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
+
+# --- 1. Generating Mock Credit Data for Evaluation ---
+np.random.seed(42)
+n_samples = 1000
+
+# Generating mock features (e.g., Income, Debt ratio, Credit Score scaling)
+X_mock = np.random.randn(n_samples, 3) 
+# Generating binary targets (0 = Not Approved, 1 = Approved)
+y_mock = np.random.choice([0, 1], size=n_samples, p=[0.3, 0.7])
+
+# Splitting into training and validation subsets
+X_train, X_test, y_train, y_test = train_test_split(X_mock, y_mock, test_size=0.3, random_state=42)
+
+
+# --- 2. Training and Evaluating the Logistic Regression Model ---
+
+# Initialize the model class
+log_reg = LogisticRegression(max_iter=1000)
+
+# Train the model using the fit method
+log_reg.fit(X_train, y_train)
+
+# Generate predictions on unseen test data
+y_pred = log_reg.predict(X_test)
+
+
+# --- 3. Displaying Evaluation Metrics ---
+print("=== Confusion Matrix ===")
+print(confusion_matrix(y_test, y_pred))
+
+print("\n=== Classification Report ===")
+print(classification_report(y_test, y_pred, target_names=['Not Approved (0)', 'Approved (1)']))
