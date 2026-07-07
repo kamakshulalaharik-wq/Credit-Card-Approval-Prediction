@@ -1,0 +1,90 @@
+from flask import Flask, render_template, request
+import os
+
+app = Flask(__name__)
+
+# --- Mocking Model Loading ---
+# In a full project, you would use: model = joblib.load('model.pkl')
+class MockModel:
+    def predict(self, features):
+        # Dummy logic: If income (first feature) > 50000, approve (1), else reject (0)
+        try:
+            income = float(features[0])
+            return [1] if income >= 50000 else [0]
+        except:
+            return [0]
+
+model = MockModel()
+
+# 1. Route for Home / Landing Page
+@app.route('/')
+def home():
+    # If home.html is not created yet, falls back safely to rendering inline text
+    try:
+        return render_template('home.html')
+    except:
+        return "<h3>Welcome to Credit Card Approval Prediction System</h3><a href='/predict_form'><button>Go to Form</button></a>"
+
+# 2. Route for Form Entry Page (index.html)
+@app.route('/predict_form')
+def predict_form():
+    return render_template('index.html')
+
+# 3. Route for Handling Form Submission & Rendering Results
+@app.route('/predict', methods=['POST'])
+def predict():
+    if request.method == 'POST':
+        # Safely collect form fields
+        applicant_name = request.form.get('applicant_name', 'Applicant')
+        income = request.form.get('income', 0)
+        
+        # Format features for model.predict() method
+        features = [income]
+        prediction_code = model.predict(features)[0]
+        
+        result_text = "Approved" if prediction_code == 1 else "Rejected"
+        
+        try:
+            return render_template('result.html', name=applicant_name, result=result_text)
+        except:
+            return f"<h3>Prediction Result for {applicant_name}: Label is {result_text}</h3><a href='/predict_form'>Back</a>"
+
+if __name__ == '__main__':
+    # Make sure 'templates' folder exists so Flask doesn't throw TemplateNotFound error
+    os.makedirs('templates', exist_ok=True)
+    print("Flask Server running locally...")
+    app.run(debug=True, port=5000)
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Credit Card Approval Form</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; background-color: #f4f6f9; }
+        .container { max-width: 500px; margin: auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .hero { text-align: center; margin-bottom: 20px; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <section class="hero">
+            <div class="hero-card">
+                <h2>Application Details</h2>
+                <form action="/predict" method="POST">
+                    
+                    <input type="text" name="applicant_name" placeholder="Enter applicant name" required>
+                    
+                    <input type="number" name="income" placeholder="Enter annual income (e.g. 60000)" required>
+                    <br><br>
+                    <button type="submit">Submit Application</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+</body>
+</html>
