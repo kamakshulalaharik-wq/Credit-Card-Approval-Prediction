@@ -1,0 +1,86 @@
+from flask import Flask, render_template, request
+import os
+
+app = Flask(__name__)
+
+# Mock prediction logic to guarantee an error-free run out of the box
+class PredictiveModel:
+    def predict(self, score):
+        # High credit standing score leads to approval (1), low score leads to rejection (0)
+        return [1] if score >= 650 else [0]
+
+model = PredictiveModel()
+
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+@app.route('/predict_form')
+def predict_form():
+    return render_template('index.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    if request.method == 'POST':
+        applicant_name = request.form.get('name', 'Applicant')
+        try:
+            credit_score = int(request.form.get('score', 0))
+        except ValueError:
+            credit_score = 0
+            
+        prediction = model.predict(credit_score)[0]
+        outcome = "APPROVED" if prediction == 1 else "REJECTED"
+        
+        return render_template('result.html', name=applicant_name, result=outcome)
+
+if __name__ == '__main__':
+    # Ensure templates folder exists dynamically
+    os.makedirs('templates', exist_ok=True)
+    app.run(debug=True, host='127.0.0.1', port=5000)
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Credit Card Prediction App</title>
+    <style>body { font-family: Arial; text-align: center; padding: 50px; background: #f4f6f9; }</style>
+</head>
+<body>
+    <h1>Credit Card Approval Prediction Portal</h1>
+    <p>Analyze applicant risk metrics and demographic eligibility in real-time.</p>
+    <a href="/predict_form"><button style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Access Prediction Form</button></a>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Application Form</title>
+    <style>body { font-family: Arial; padding: 50px; text-align: center; }</style>
+</head>
+<body>
+    <h2>Applicant Demographic Data Input</h2>
+    <form action="/predict" method="POST" style="display: inline-block; text-align: left;">
+        <label>Applicant Full Name:</label><br>
+        <input type="text" name="name" required style="width: 250px; padding: 5px; margin-bottom: 15px;"><br>
+        
+        <label>Credit Bureau Bureau Score (300 - 850):</label><br>
+        <input type="number" name="score" required style="width: 250px; padding: 5px; margin-bottom: 15px;"><br>
+        
+        <button type="submit" style="padding: 10px; width: 100%;">Evaluate Application</button>
+    </form>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prediction Analysis</title>
+    <style>body { font-family: Arial; text-align: center; padding: 50px; }</style>
+</head>
+<body>
+    <h2>Evaluation Matrix Result for {{ name }}</h2>
+    <h1 style="color: {{ 'green' if result == 'APPROVED' else 'red' }};">{{ result }}</h1>
+    <br>
+    <a href="/predict_form">Process Another Application</a>
+</body>
+</html>
