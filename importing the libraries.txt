@@ -1,0 +1,33 @@
+# 1. Core Data Analysis and Manipulation Libraries
+import pandas as pd
+import numpy as np
+
+# 2. Data Visualization Libraries
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 3. Handling Class Imbalance (Uncomment if imbalanced-learn is installed)
+# from imblearn.combine import SMOTETomek
+
+
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+
+
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.metrics import classification_report, confusion_matrix, f1_score
+
+# --- Verification & Output Generation ---
+print(" All libraries imported successfully without errors!")
+print(f"Pandas version: {pd.__version__}")
+print(f"NumPy version:  {np.__version__}")
+
+# Creating a tiny dummy dataframe to prove everything works seamlessly
+dummy_data = pd.DataFrame({
+    'Income': [50000, 120000, 30000],
+    'Approved': [1, 1, 0]
+})
+print("\nSample Data Structure Verified:")
+print(dummy_data)
